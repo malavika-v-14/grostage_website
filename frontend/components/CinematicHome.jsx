@@ -43,10 +43,31 @@ export function ProjectTheatre({ works }) {
   const [current, setCurrent] = useState(0);
   useGSAP(() => {
     const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const el = root.current;
+      const atmosphere = el.querySelector('.theatre-atmosphere');
+      gsap.to(atmosphere, { yPercent: 12, xPercent: -4, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 1.4 } });
+      gsap.to(el.querySelector('.theatre-orb-a'), { x: 90, y: -55, scale: 1.12, duration: 14, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.to(el.querySelector('.theatre-orb-b'), { x: -70, y: 70, scale: .86, duration: 17, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      return () => gsap.killTweensOf([atmosphere, el.querySelector('.theatre-orb-a'), el.querySelector('.theatre-orb-b')]);
+    });
     mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
       const section = root.current;
       section.classList.add('theatre-enhanced');
       const panels = gsap.utils.toArray('.theatre-project', root.current);
+      const images = panels.map(panel => panel.querySelector('img'));
+      const pointerX = gsap.quickTo(root.current.querySelector('.theatre-atmosphere'), 'x', { duration: 1.4, ease: 'power3.out' });
+      const pointerY = gsap.quickTo(root.current.querySelector('.theatre-atmosphere'), 'y', { duration: 1.4, ease: 'power3.out' });
+      const imageX = images.map((image, i) => gsap.quickTo(image, 'x', { duration: .9 + i * .12, ease: 'power3.out' }));
+      const imageY = images.map((image, i) => gsap.quickTo(image, 'y', { duration: 1 + i * .1, ease: 'power3.out' }));
+      const move = event => {
+        const bounds = root.current.getBoundingClientRect();
+        const x = event.clientX / bounds.width - .5, y = (event.clientY - bounds.top) / bounds.height - .5;
+        pointerX(x * 18); pointerY(y * 14);
+        imageX.forEach((to, i) => { to(x * (8 + i * 4)); imageY[i](y * (5 + i * 3)); });
+      };
+      const leave = () => { pointerX(0); pointerY(0); imageX.forEach((to, i) => { to(0); imageY[i](0); }); };
+      section.addEventListener('pointermove', move, { passive: true }); section.addEventListener('pointerleave', leave);
       const tl = gsap.timeline({ scrollTrigger: { trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * (panels.length - 1) * .8, pin: true, scrub: .8, invalidateOnRefresh: true } });
       story.current = tl.scrollTrigger;
       panels.forEach((panel, i) => {
@@ -61,7 +82,7 @@ export function ProjectTheatre({ works }) {
         root.current.querySelector('.theatre-progress').style.transform = `scaleX(${(current + 1) / panels.length})`;
       };
       tl.eventCallback('onUpdate', update); update();
-      return () => { section.classList.remove('theatre-enhanced'); story.current = null; panels.forEach(panel => { panel.inert = false; }); };
+      return () => { section.classList.remove('theatre-enhanced'); section.removeEventListener('pointermove', move); section.removeEventListener('pointerleave', leave); story.current = null; panels.forEach(panel => { panel.inert = false; }); };
     });
     return () => mm.revert();
   }, { scope: root });
@@ -73,6 +94,7 @@ export function ProjectTheatre({ works }) {
     window.__lenis ? window.__lenis.scrollTo(top, { duration: .9 }) : window.scrollTo({ top, behavior: 'smooth' });
   };
   return <section ref={root} className="project-theatre" data-nav-theme="dark" aria-label="Selected work">
+    <div className="theatre-atmosphere" aria-hidden="true"><span className="theatre-orb theatre-orb-a" /><span className="theatre-orb theatre-orb-b" /><span className="theatre-haze" /><span className="theatre-grain" /><span className="theatre-particles" /></div>
     <div className="theatre-heading"><p>SELECTED WORK / IDEAS MADE REAL</p><Link href="/work">All projects <span aria-hidden="true">↗</span></Link></div>
     <div className="theatre-panels">{works.slice(0, 4).map((w, i) => <article className="theatre-project" key={w.slug} style={{ '--project-index': i }}>
       <div className="theatre-copy"><span className="theatre-index">0{i + 1} / 04</span><h2>{w.title}</h2><p>{w.category}</p><Link href={`/work/${w.slug}`} className="theatre-link">Explore the project <span aria-hidden="true">↗</span></Link></div>

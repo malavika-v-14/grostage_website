@@ -13,5 +13,5 @@ export async function POST(req, { params }) {
   try {
     const r = await q(`INSERT INTO ${type}(title,slug,excerpt,content,image,published) VALUES($1,$2,$3,$4,$5,$6) RETURNING *`, [b.title, slugify(b.slug || b.title), b.excerpt || '', b.content || '', b.image || '', b.published !== false]);
     return Response.json(r[0]);
-  } catch (e) { return Response.json({ error: e.message }, { status: 400 }); }
+  } catch (e) { console.error('Content create failed', e); return Response.json({ error: 'Content could not be saved. Check the database connection.' }, { status: 503 }); }
 }

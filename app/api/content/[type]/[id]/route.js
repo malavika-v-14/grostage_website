@@ -8,11 +8,16 @@ export async function PUT(req, { params }) {
   try {
     const r = await q(`UPDATE ${type} SET title=$1,slug=$2,excerpt=$3,content=$4,image=$5,published=$6 WHERE id=$7 RETURNING *`, [b.title, slugify(b.slug || b.title), b.excerpt || '', b.content || '', b.image || '', b.published !== false, id]);
     return Response.json(r[0]);
-  } catch (e) { return Response.json({ error: e.message }, { status: 400 }); }
+  } catch (e) { console.error('Content update failed', e); return Response.json({ error: 'Content could not be saved. Check the database connection.' }, { status: 503 }); }
 }
 export async function DELETE(_, { params }) {
   const { type, id } = await params; if (!ok(type) || !(await isAdmin())) return Response.json({}, { status: 401 });
-  const rows = await q(`DELETE FROM ${type} WHERE id=$1 RETURNING id`, [id]);
-  if (!rows.length) return Response.json({ error: 'Content not found' }, { status: 404 });
-  return Response.json({ ok: true });
+  try {
+    const rows = await q(`DELETE FROM ${type} WHERE id=$1 RETURNING id`, [id]);
+    if (!rows.length) return Response.json({ error: 'Content not found' }, { status: 404 });
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error('Content delete failed', error);
+    return Response.json({ error: 'Content could not be deleted. Check the database connection.' }, { status: 503 });
+  }
 }
