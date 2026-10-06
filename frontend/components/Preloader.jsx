@@ -8,10 +8,11 @@ export default function Preloader() {
   const num = useRef(null);
   useGSAP(() => {
     const el = root.current;
-    const fallback = setTimeout(markReady, 4000);
-    const skip = matchMedia('(prefers-reduced-motion: reduce)').matches || sessionStorage.getItem('gs-seen');
+    const fallback = setTimeout(() => { el.style.display = 'none'; markReady(); }, 4000);
+    let seen = false;
+    try { seen = sessionStorage.getItem('gs-seen'); sessionStorage.setItem('gs-seen', '1'); } catch { /* Storage can be disabled in private contexts. */ }
+    const skip = matchMedia('(prefers-reduced-motion: reduce)').matches || seen;
     if (skip) { el.style.display = 'none'; markReady(); return () => clearTimeout(fallback); }
-    sessionStorage.setItem('gs-seen', '1');
     const c = { v: 0 };
     gsap.timeline({ onComplete: () => { el.style.display = 'none'; } })
       .to(c, { v: 100, duration: 0.4, ease: 'power2.inOut', onUpdate: () => { num.current.textContent = String(Math.round(c.v)).padStart(3, '0'); } })

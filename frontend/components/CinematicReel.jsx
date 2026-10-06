@@ -28,6 +28,15 @@ export default function CinematicReel({ works }) {
       gsap.to('.reel-backdrop i', { x: 28, y: -18, scale: 1.12, duration: 9, stagger: 1.5, repeat: -1, yoyo: true, ease: 'sine.inOut', scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' } });
       gsap.to('.reel-light', { xPercent: 32, yPercent: -18, duration: 14, repeat: -1, yoyo: true, ease: 'sine.inOut', scrollTrigger: { trigger: root.current, start: 'top bottom', end: 'bottom top', toggleActions: 'play pause resume pause' } });
     });
+    mm.add('(pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
+      const el = root.current, stage = el.querySelector('.reel-stage');
+      const x = gsap.quickTo(stage, 'rotationY', { duration: 1.1, ease: 'power3.out' });
+      const y = gsap.quickTo(stage, 'rotationX', { duration: 1.1, ease: 'power3.out' });
+      const move = e => { const b = el.getBoundingClientRect(); x((e.clientX / b.width - .5) * 12); y(-((e.clientY - b.top) / b.height - .5) * 10); };
+      const leave = () => { x(0); y(0); };
+      el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
+      return () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); };
+    });
     mm.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
       const animation = gsap.to(position.current, { value: total - 1, ease: 'none', onUpdate: layout,
         scrollTrigger: { trigger: root.current, start: 'top top', end: () => '+=' + innerHeight * Math.max(1, total - 1) * .55, pin: true, scrub: .85, invalidateOnRefresh: true } });
@@ -47,7 +56,7 @@ export default function CinematicReel({ works }) {
     }
   });
   if (!total) return null;
-  return <section ref={root} className="reel-section dimensional-reel" aria-label="Selected work film reel" tabIndex={0}
+  return <section ref={root} data-nav-theme="dark" className="reel-section dimensional-reel" aria-label="Selected work film reel" tabIndex={0}
     onKeyDown={e => { if (['ArrowLeft', 'ArrowRight'].includes(e.key)) { e.preventDefault(); go(e.key === 'ArrowRight' ? 1 : -1); } }}>
     <div className="reel-backdrop" aria-hidden="true"><span className="reel-light" /><i /><i /><i /></div>
     <div className="reel-heading"><p className="eyebrow">IDEAS MADE REAL / SELECTED WORK</p><h2>Another <span className="serif">dimension.</span></h2></div>

@@ -1,30 +1,22 @@
 import Link from 'next/link';
 import './home.css';
-import Testimonials from '@/frontend/components/Testimonials';
 import TextFill from '@/frontend/components/TextFill';
 import Magnetic from '@/frontend/components/Magnetic';
 import { Process } from '@/frontend/components/HomeSections';
-import { ExperienceHero, ExperienceServices, ExperienceWork } from '@/frontend/components/ExperienceHome';
+import { ExperienceServices } from '@/frontend/components/ExperienceHome';
+import { StageHero, ProjectTheatre } from '@/frontend/components/CinematicHome';
 import { services, works } from '@/backend/lib/content';
 
-const words = ['AI', 'Websites', 'Business apps', 'ERP', 'Automation', 'Growth'];
 export default function Home() {
-  return <main id="main-content">
-    <ExperienceHero works={works} />
-    <div className="hx hx-marq" aria-hidden="true"><div>{[0, 1].map(k => <div className="hx-marq-g" key={k}>{words.map((w, i) => <span key={w} className={i % 2 ? 'o' : ''}>{w}<b>✳</b></span>)}</div>)}</div></div>
-    <section className="hx hx-about" id="hx-about">
-      <p className="hx-tag"><i /> THE GROSTAGE WAY</p>
-      <TextFill className="hx-statement" text="We turn ideas, operations and data into AI-powered digital products that help businesses work better, sell better and grow." />
-      <Link href="/about" className="hx-link" data-cursor="Read">About Grostage <span>↗</span></Link>
+  return <main id="main-content" className="cinematic-home">
+    <StageHero />
+    <section className="stage-manifesto" id="hx-about" data-nav-theme="light">
+      <p className="stage-label">01 / A DIFFERENT PERSPECTIVE</p>
+      <div><TextFill className="stage-statement" text="Great ideas deserve to be experienced. We connect design, technology and AI to move your business into its next stage." /><div className="manifesto-bottom"><p>From the first spark to the systems behind it.<br />One team, bringing the whole picture together.</p><Link className="stage-text-link" href="/about">Meet Grostage <span>↗</span></Link></div></div>
     </section>
-    <ExperienceServices services={services} />
-    <ExperienceWork works={works} />
-    <Process />
-    <Testimonials />
-    <section className="hx hx-cta">
-      <p className="hx-tag"><i /> LET’S TALK</p>
-      <h2>Ready to build <span className="serif">what’s next?</span></h2>
-      <Magnetic strength={0.4}><Link href="/contact" className="hx-orb">Start a project <span>↗</span></Link></Magnetic>
-    </section>
+    <ProjectTheatre works={works} />
+    <div id="capabilities" data-nav-theme="light"><ExperienceServices services={services} /></div>
+    <div data-nav-theme="dark"><Process /></div>
+    <section className="stage-invitation" data-nav-theme="dark"><p className="stage-label">THE NEXT CHAPTER STARTS WITH A CONVERSATION</p><Link href="/contact" className="invitation-link"><span>Make your</span><span>next move<span className="invitation-arrow" aria-hidden="true">↗</span></span></Link><div><p>Your ambition. Our collective imagination.</p><Magnetic><Link className="stage-pill" href="/contact">Let’s talk <span>↗</span></Link></Magnetic></div></section>
   </main>;
 }
