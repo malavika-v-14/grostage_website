@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Grostage project cover placeholder</title>
+  <desc id="description">Abstract Grostage project artwork</desc>
+  <defs>
+    <radialGradient id="glow" cx="70%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#4f8d89" stop-opacity=".8"/>
+      <stop offset=".45" stop-color="#174d51"/>
+      <stop offset="1" stop-color="#081719"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+  <g fill="none" stroke="#b7d4ce" stroke-opacity=".17">
+    <ellipse cx="800" cy="510" rx="590" ry="360"/>
+    <ellipse cx="800" cy="510" rx="430" ry="260"/>
+    <ellipse cx="800" cy="510" rx="270" ry="160"/>
+  </g>
+  <path d="M0 760C320 610 570 840 850 670s490-70 750-230v560H0Z" fill="#87b9ae" fill-opacity=".1"/>
+  <text x="90" y="900" fill="#edf3ef" font-family="Arial, sans-serif" font-size="28" letter-spacing="8">GROSTAGE / PROJECT</text>
+</svg>

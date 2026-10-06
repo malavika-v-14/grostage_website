@@ -5,9 +5,12 @@ import Magnetic from '@/frontend/components/Magnetic';
 import { Process } from '@/frontend/components/HomeSections';
 import { ExperienceServices } from '@/frontend/components/ExperienceHome';
 import { StageHero, ProjectTheatre } from '@/frontend/components/CinematicHome';
-import { services, works } from '@/backend/lib/content';
+import { services, getWorks } from '@/backend/lib/content';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const works = await getWorks();
   return <main id="main-content" className="cinematic-home">
     <StageHero />
     <section className="stage-manifesto" id="hx-about" data-nav-theme="light">

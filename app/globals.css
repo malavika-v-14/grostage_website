@@ -53,8 +53,9 @@ input:focus,textarea:focus{border-color:var(--t2)}
 .tabs{display:flex;gap:8px;margin:28px 0}.tabs button{background:none;border:1px solid var(--line);color:var(--mut);padding:10px 20px;border-radius:999px;cursor:pointer;font:15px var(--inter)}
 .tabs .on{background:var(--t);color:#fff;border-color:var(--t)}
 .list{display:flex;flex-direction:column;gap:10px;margin-top:20px}.item{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 20px;border:1px solid var(--line);border-radius:14px}
+.admin-social-panel{margin:10px 0;padding:28px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}.admin-social-panel h2{font-size:22px;font-weight:500;margin-bottom:22px}.admin-social-panel>div{display:grid;grid-template-columns:1fr 1fr;gap:22px 28px}
 @media(max-width:900px){.grid4,.grid3,.steps{grid-template-columns:1fr 1fr}.two,.grid2{grid-template-columns:1fr}.f-grid{grid-template-columns:1fr 1fr}.nav-links,.nav-in>.btn{display:none}.burger{display:flex}.sec{padding:90px 0}}
-@media(max-width:560px){.grid4,.grid3,.steps,.f-grid{grid-template-columns:1fr}.f-bot{flex-direction:column;gap:10px}}
+@media(max-width:560px){.grid4,.grid3,.steps,.f-grid,.admin-social-panel>div{grid-template-columns:1fr}.f-bot{flex-direction:column;gap:10px}.admin-social-panel{padding:20px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 /* Public design layer. Existing admin and API styling remains available above. */
 :root{--bg:#000;--fg:#fff;--t:#104850;--t2:#104850;--mut:rgba(255,255,255,.57);--line:rgba(255,255,255,.15)}

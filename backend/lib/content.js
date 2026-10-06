@@ -1,3 +1,5 @@
+import { q } from './db';
+
 // Public preview content transcribed/adapted from the supplied company profile.
 // Database-backed management and seeding are the next review stages.
 export const services = [
@@ -15,6 +17,74 @@ export const works = [
   {id: 5, slug: 'samsung-exclusive-store', title: 'Samsung Exclusive Store', category: 'Campaigns / Social media', image: '/projects/profile-13-0.jpeg', imageAlt: 'Abstract ribbon artwork from the Grostage company profile', representative: true, tags: ['Campaigns', 'Social media', 'Content'], excerpt: 'Campaign-led content that keeps a local retail store consistently visible.', content: 'Campaign and social media work for a Samsung exclusive retail store, built to keep the store consistently visible to its local audience through campaign-led content.\n\n## Consistent presence\n\nThe work combines campaigns, social media and content around the store’s local audience.\n\n## Image note\n\nThe company profile describes this engagement without campaign images. The visual shown here is Grostage artwork from the supplied profile.'},
   {id: 6, slug: 'soorya-solar', title: 'Soorya Solar', category: 'Brand growth / Digital marketing', image: '/projects/profile-8-0.jpeg', imageAlt: 'Technology illustration from the Grostage company profile', representative: true, tags: ['Brand', 'Social media', 'SEO'], excerpt: 'A clearer digital presence and a consistent voice across social and search.', content: 'Brand-led digital marketing for Soorya Solar, shaping a clearer digital presence and a consistent voice across social and search.\n\n## A connected presence\n\nBrand, social media and SEO form the foundation of this digital marketing engagement.\n\n## Image note\n\nThe company profile describes this engagement without campaign images. The visual shown here is Grostage technology artwork from the supplied profile.'},
 ];
+
+const workColumns = `id,title,slug,category,excerpt,content,image,image_alt,representative,gallery,tags,published,created_at`;
+
+export function normalizeWork(row) {
+  return {
+    ...row,
+    tags: Array.isArray(row.tags)
+      ? row.tags
+      : String(row.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
+    imageAlt: row.image_alt || row.imageAlt || '',
+    representative: Boolean(row.representative),
+  };
+}
+
+let worksReady;
+export async function ensureWorksTable() {
+  if (!worksReady) worksReady = (async () => {
+    await q(`CREATE TABLE IF NOT EXISTS works (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      category TEXT DEFAULT '',
+      excerpt TEXT DEFAULT '',
+      content TEXT DEFAULT '',
+      image TEXT DEFAULT '',
+      image_alt TEXT DEFAULT '',
+      representative BOOLEAN DEFAULT false,
+      gallery TEXT DEFAULT '',
+      tags TEXT DEFAULT '',
+      published BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT now()
+    )`);
+    for (const work of works) {
+      await q(`INSERT INTO works(title,slug,category,excerpt,content,image,image_alt,representative,gallery,tags,published)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,true) ON CONFLICT(slug) DO NOTHING`, [
+        work.title, work.slug, work.category, work.excerpt, work.content, work.image,
+        work.imageAlt || '', Boolean(work.representative), work.gallery || '', work.tags.join(', ')
+      ]);
+    }
+  })().catch(error => { worksReady = null; throw error; });
+  return worksReady;
+}
+
+export async function getWorks({ includeDrafts = false } = {}) {
+  try {
+    await ensureWorksTable();
+    const rows = await q(`SELECT ${workColumns} FROM works ${includeDrafts ? '' : 'WHERE published'} ORDER BY id ASC`);
+    const normalized = rows.map(normalizeWork);
+    return includeDrafts ? normalized : normalized.map(work => ({
+      ...work,
+      image: String(work.image || '').trim() || '/projects/work-placeholder.svg',
+    }));
+  } catch (error) {
+    console.error('Work content read failed', error);
+    return includeDrafts ? [] : works;
+  }
+}
+
+export async function getWork(slug, { includeDrafts = false } = {}) {
+  try {
+    await ensureWorksTable();
+    const rows = await q(`SELECT ${workColumns} FROM works WHERE slug=$1 ${includeDrafts ? '' : 'AND published'} LIMIT 1`, [slug]);
+    return rows[0] ? normalizeWork(rows[0]) : null;
+  } catch (error) {
+    console.error('Work content read failed', error);
+    return works.find(work => work.slug === slug) || null;
+  }
+}
 export const samplePosts = [
   {id: 'sample-1', slug: 'technology-with-a-business-purpose', title: 'Technology with a business purpose.', category: 'Perspective', image: '/projects/profile-13-0.jpeg', excerpt: 'Start with the problem. Then build the right digital solution around it.', content: 'Businesses rarely need technology for the sake of technology. They need better ways to acquire customers, manage operations, automate repetitive work, understand data and deliver better experiences.\n\n## Start with the business\n\nGrostage works with businesses to understand the problem first, then design and build the right digital solution around it. Strategy gives the work direction: understanding the business, its goals and its challenges.\n\n## Bring the disciplines together\n\nDesign creates clear and purposeful experiences. Technology turns those experiences into reliable websites, software and systems. Growth connects the product with marketing, automation and measurable business objectives.\n\n## Build for what comes next\n\nA practical solution needs to be useful and maintainable. The next stage of the business should shape the decisions made today.'},
   {id: 'sample-2', slug: 'from-information-to-action', title: 'From information to insight to action.', category: 'AI & Data', image: '/projects/profile-8-0.jpeg', excerpt: 'Where AI, automation and analytics meet everyday business operations.', content: 'Grostage uses AI, automation and analytics to help businesses reduce repetitive work and make better decisions. The focus is practical: useful information, clearer insight and workflows that support action.\n\n## Make data useful\n\nPower BI dashboards, sales analytics, financial reporting and operational dashboards bring information into the context of business decisions. Automated reporting connects this information to recurring needs.\n\n## Make automation intelligent\n\nAI assistants, chatbots, document processing and AI-powered workflows can become parts of a broader business system. Integrations connect these capabilities with the tools a team uses.\n\n## Connect the workflow\n\nWorkflow automation, API integrations, data processing and notifications connect information with the next step. The starting point remains the business process that needs to improve.'},

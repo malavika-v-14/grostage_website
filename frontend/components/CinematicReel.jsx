@@ -62,7 +62,7 @@ export default function CinematicReel({ works }) {
     <div className="reel-backdrop" aria-hidden="true"><span className="reel-light" /><i /><i /><i /></div>
     <div className="reel-heading"><p className="eyebrow">IDEAS MADE REAL / SELECTED WORK</p><h2>Another <span className="serif">dimension.</span></h2></div>
     <div className="reel-stage">{works.map((w, i) => <Link href={'/work/' + w.slug} key={w.slug} className="reel-frame" style={{ '--offset': i, zIndex: total - i }} aria-label={'View ' + w.title} tabIndex={i === 0 ? 0 : -1}>
-      <img src={w.image} alt={w.imageAlt || w.title} /><span><small>{String(i + 1).padStart(2, '0')}</small>{w.title}<b>↗</b></span></Link>)}</div>
+      <img src={w.image || '/projects/work-placeholder.svg'} alt={w.imageAlt || w.title} /><span><small>{String(i + 1).padStart(2, '0')}</small>{w.title}<b>↗</b></span></Link>)}</div>
     <div className="reel-controls"><button onClick={() => go(-1)} disabled={current === 0} aria-label="Previous project">←</button><p aria-live="polite"><span className="reel-count">{String(current + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span><span className="reel-name">{works[current].title}</span></p><button onClick={() => go(1)} disabled={current === total - 1} aria-label="Next project">→</button></div>
     <span className="reel-instruction">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></span>
   </section>;

@@ -101,7 +101,7 @@ export function ProjectTheatre({ works }) {
     <div className="theatre-heading"><p>SELECTED WORK / IDEAS MADE REAL</p><Link href="/work">All projects <span aria-hidden="true">↗</span></Link></div>
     <div className="theatre-panels">{works.slice(0, 4).map((w, i) => <article className="theatre-project" key={w.slug} style={{ '--project-index': i }}>
       <div className="theatre-copy"><span className="theatre-index">0{i + 1} / 04</span><h2>{w.title}</h2><p>{w.category}</p><Link href={`/work/${w.slug}`} className="theatre-link">Explore the project <span aria-hidden="true">↗</span></Link></div>
-      <Link href={`/work/${w.slug}`} className="theatre-image" data-cursor="View" aria-label={`View ${w.title}`}><img src={w.image} alt={w.imageAlt || w.title} loading="lazy" /><span aria-hidden="true">↗</span></Link>
+      <Link href={`/work/${w.slug}`} className="theatre-image" data-cursor="View" aria-label={`View ${w.title}`}><img src={w.image || '/projects/work-placeholder.svg'} alt={w.imageAlt || w.title} loading="lazy" /><span aria-hidden="true">↗</span></Link>
       <span className="theatre-ghost" aria-hidden="true">0{i + 1}</span>
     </article>)}</div>
     <div className="theatre-track" aria-hidden="true"><span className="theatre-progress" /></div>
