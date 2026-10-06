@@ -12,6 +12,7 @@ export default function CinematicReel({ works }) {
     const p = position.current.value;
     root.current.querySelectorAll('.reel-frame').forEach((frame, i) => {
       const offset = i - p, distance = Math.abs(offset);
+      frame.classList.toggle('is-current', distance < .6);
       frame.style.setProperty('--offset', offset.toFixed(4));
       frame.style.zIndex = Math.round(100 - distance * 10);
       frame.style.opacity = Math.max(0, 1 - Math.max(0, distance - 1) * .35);
