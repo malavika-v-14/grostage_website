@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useState } from 'react';
 export default function ContactForm() {
   const [s,setS] = useState({name:'',email:'',message:''});

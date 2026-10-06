@@ -1,1 +1,9 @@
-export default { serverExternalPackages: ['pg'] };
+import { fileURLToPath } from 'node:url';
+
+export default phase => ({
+  outputFileTracingRoot: fileURLToPath(new URL('.', import.meta.url)),
+  distDir: phase === 'phase-development-server' ? '.next-dev' : '.next-studio',
+  serverExternalPackages: ['pg'],
+  // Avoid worker creation failures on restricted Windows environments.
+  experimental: { workerThreads: false, cpus: 1 },
+});

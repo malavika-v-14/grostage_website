@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useRef } from 'react';
 export default function Reveal({ children, delay = 0, y = 28, className = '' }) {
   const ref = useRef(null);

@@ -1,4 +1,4 @@
-import { q } from './db';
+import { q } from '@/backend/lib/db';
 export const defaultFooter = {
   tagline: 'Digital products. Technology. Growth.', email: 'info@grostage.com', phone: '', address: '',
   links: 'About Us|/about\nServices|/services\nOur Work|/work\nBlog|/blog\nClient Stories|/client-stories\nContact|/contact',

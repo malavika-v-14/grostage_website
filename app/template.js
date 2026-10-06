@@ -1,50 +1,41 @@
-﻿'use client';
-import { useEffect, useRef } from 'react';
+'use client';
+import { useRef } from 'react';
+import { gsap, SplitText, ScrollTrigger, useGSAP } from '@/frontend/lib/gsap';
+
 export default function Template({ children }) {
   const ref = useRef(null);
-  useEffect(() => {
-    const root = ref.current;
-    const preference = matchMedia('(prefers-reduced-motion: reduce)');
-    const animations = new Set();
-    const seen = new WeakSet();
-    let sequence = 0;
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(({target, isIntersecting}) => {
-        if (!isIntersecting || seen.has(target) || preference.matches) return;
-        seen.add(target);
-        const title = target.matches('h1,h2');
-        const animation = target.animate([
-          {opacity: 0, transform: title ? 'perspective(900px) translateY(28px) rotateX(7deg)' : 'translateY(18px)'},
-          {opacity: 1, transform: 'none'}
-        ], {duration: title ? 900 : 650, delay: (sequence++ % 4) * 75 + (document.querySelector('.site-loader') ? 600 : 0), easing: 'cubic-bezier(.22,1,.36,1)', fill: 'backwards'});
-        animations.add(animation);
-        animation.onfinish = () => animations.delete(animation);
-        observer.unobserve(target);
-      });
-    }, {threshold: .08});
-    root.querySelectorAll('h1,h2,h3,p,blockquote,.about-feature>img,.work-cover,.article-cover,.cform>label').forEach(node => observer.observe(node));
-    const loops = new IntersectionObserver(entries => entries.forEach(({target,isIntersecting}) => target.classList.toggle('motion-offscreen',!isIntersecting)), {threshold: 0});
-    root.querySelectorAll('.hero,.reel-section,.galaxy-card,.work-marquee').forEach(node => loops.observe(node));
-    const fine = matchMedia('(pointer:fine)');
-    let tilted;
-    const reset = () => {if(tilted){tilted.style.removeProperty('transform');tilted=null;}};
-    const move = e => {
-      if(preference.matches || !fine.matches) return;
-      const card=e.target.closest('.service-card,.project-card,.review-card,.team-card,.blog-card');
-      if(card!==tilted) reset();
-      if(!card) return;
-      tilted=card;
-      const box=card.getBoundingClientRect();
-      const x=(e.clientX-box.left)/box.width-.5, y=(e.clientY-box.top)/box.height-.5;
-      card.style.transform=`perspective(1100px) rotateX(${-y*5}deg) rotateY(${x*6}deg) translateY(-3px)`;
-    };
-    const cancel = () => {if(preference.matches){animations.forEach(a=>a.cancel());reset();}};
-    const visibility = () => root.classList.toggle('motion-tab-hidden',document.hidden);
-    document.addEventListener('visibilitychange',visibility);
-    root.addEventListener('pointermove',move,{passive:true});
-    root.addEventListener('pointerleave',reset);
-    preference.addEventListener('change',cancel);
-    return () => {observer.disconnect();loops.disconnect();animations.forEach(a=>a.cancel());reset();root.removeEventListener('pointermove',move);root.removeEventListener('pointerleave',reset);preference.removeEventListener('change',cancel);document.removeEventListener('visibilitychange',visibility);};
-  }, []);
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const root = ref.current;
+      const headings = [...root.querySelectorAll('h1,h2')].filter(n => !n.closest('.experience-hero,.reel-section,.studio-showcase,.adm'));
+      const splits = headings.map(heading => SplitText.create(heading, {
+        type: 'lines', mask: 'lines', linesClass: 'interactive-line', autoSplit: true,
+        onSplit(self) { return gsap.from(self.lines, { yPercent: 105, opacity: .2, stagger: .07, duration: .8, ease: 'power3.out', scrollTrigger: { trigger: heading, start: 'top 95%', once: true } }); }
+      }));
+      const els = [...root.querySelectorAll('h1,h2,h3,blockquote,main p,.about-feature>img,.work-cover,.article-cover,.cform>label')]
+        .filter(n => !n.closest('.hero,.reveal,.reel-section,.hx,.studio-showcase,.experience-hero') && !n.matches('h1,h2,.intro-fill'));
+      gsap.set(els, { autoAlpha: 0, y: 24 });
+      ScrollTrigger.batch(els, { start: 'top 92%', once: true,
+        onEnter: b => gsap.to(b, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: 'power3.out', overwrite: true }) });
+      const refresh = setTimeout(() => ScrollTrigger.refresh(), 150);
+
+      if (!matchMedia('(pointer:fine)').matches) return () => { clearTimeout(refresh); splits.forEach(s => s.revert()); };
+      let tilted;
+      const reset = () => { if (tilted) { tilted.style.removeProperty('transform'); tilted = null; } };
+      const move = e => {
+        const card = e.target.closest('.service-card,.project-card,.review-card,.team-card,.blog-card');
+        if (card !== tilted) reset();
+        if (!card) return;
+        tilted = card;
+        const b = card.getBoundingClientRect();
+        const x = (e.clientX - b.left) / b.width - 0.5, y = (e.clientY - b.top) / b.height - 0.5;
+        card.style.transform = `perspective(1100px) rotateX(${-y * 5}deg) rotateY(${x * 6}deg) translateY(-3px)`;
+      };
+      root.addEventListener('pointermove', move, { passive: true });
+      root.addEventListener('pointerleave', reset);
+      return () => { clearTimeout(refresh); splits.forEach(s => s.revert()); root.removeEventListener('pointermove', move); root.removeEventListener('pointerleave', reset); reset(); };
+    });
+  }, { scope: ref });
   return <div ref={ref} className="page-motion">{children}</div>;
 }

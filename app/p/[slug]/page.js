@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'; import { q } from '@/lib/db'; import { Body } from '@/lib/render'; import Reveal from '@/components/Reveal';
+import { notFound } from 'next/navigation'; import { q } from '@/backend/lib/db'; import { Body } from '@/frontend/lib/render'; import Reveal from '@/frontend/components/Reveal';
 export const dynamic = 'force-dynamic';
 export default async function Page({ params }) {
   const { slug } = await params; let p; try { p = (await q('SELECT * FROM pages WHERE slug=$1 AND published', [slug]))[0]; } catch {}

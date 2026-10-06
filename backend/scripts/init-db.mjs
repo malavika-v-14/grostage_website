@@ -9,4 +9,4 @@ for (const file of ['.env.local', '.env']) {
   }
 }
 const c = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: process.env.PGSSL==='true'?{rejectUnauthorized:false}:undefined });
-await c.connect(); await c.query(fs.readFileSync('sql/schema.sql','utf8')); await c.end(); console.log('Database ready');
+await c.connect(); await c.query(fs.readFileSync('backend/sql/schema.sql','utf8')); await c.end(); console.log('Database ready');

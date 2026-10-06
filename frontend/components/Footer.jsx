@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Logo from './Logo';
-import { getFooter, parseLinks } from '@/lib/footer';
+import { getFooter, parseLinks } from '@/backend/lib/footer';
 export default async function Footer() {
   const f = await getFooter();
   return (

@@ -1,4 +1,4 @@
-import { q } from '@/lib/db'; import { isAdmin } from '@/lib/auth'; import { getFooter } from '@/lib/footer';
+import { q } from '@/backend/lib/db'; import { isAdmin } from '@/backend/lib/auth'; import { getFooter } from '@/backend/lib/footer';
 export const dynamic = 'force-dynamic';
 export async function GET() { return Response.json(await getFooter()); }
 export async function PUT(req) {

@@ -1,19 +1,30 @@
-﻿import Link from 'next/link';
-import Hero from '@/components/Hero';
-import Reveal from '@/components/Reveal';
-import ProjectCard from '@/components/ProjectCard';
-import Testimonials from '@/components/Testimonials';
-import CTA from '@/components/CTA';
-import {services, works} from '@/lib/content';
-import ServiceCard from '@/components/ServiceCard';
-import WorkMarquee from '@/components/WorkMarquee';
+import Link from 'next/link';
+import './home.css';
+import Testimonials from '@/frontend/components/Testimonials';
+import TextFill from '@/frontend/components/TextFill';
+import Magnetic from '@/frontend/components/Magnetic';
+import { Process } from '@/frontend/components/HomeSections';
+import { ExperienceHero, ExperienceServices, ExperienceWork } from '@/frontend/components/ExperienceHome';
+import { services, works } from '@/backend/lib/content';
+
+const words = ['AI', 'Websites', 'Business apps', 'ERP', 'Automation', 'Growth'];
 export default function Home() {
-  return <main id="main-content"><Hero />
-    <div className="capability-strip"><div className="wrap"><span>DIGITAL PRODUCTS</span><i>✳</i><span>BUSINESS TECHNOLOGY</span><i>✳</i><span>AI & DATA</span><i>✳</i><span>DIGITAL GROWTH</span></div></div>
-    <section className="sec intro-section"><div className="wrap intro-grid"><p className="eyebrow">01 / THE GROSTAGE WAY</p><Reveal><h2>Technology with<br />a <span className="serif">business purpose.</span></h2><div className="intro-bottom"><p>We bring strategy, design, technology and execution together. One team to turn your ideas, operational challenges and growth opportunities into practical digital solutions.</p><Link href="/about" className="circle-link" aria-label="About Grostage">↗</Link></div></Reveal></div></section>
-    <section className="sec services-preview" id="services"><div className="wrap"><div className="section-heading"><Reveal><p className="eyebrow">02 / WHAT WE DO</p><h2 className="h2">Four capabilities.<br /><span className="serif">One digital partner.</span></h2></Reveal><Link href="/services" className="text-link">All our services ↗</Link></div><div className="service-grid">{services.map((s,i) => <Reveal key={s.slug} delay={i*.06}><ServiceCard service={s} index={i} /></Reveal>)}</div></div></section>
-    <section className="sec selected-work" id="work"><div className="wrap"><div className="section-heading"><Reveal><p className="eyebrow">03 / SELECTED WORK</p><h2 className="h2">Real businesses.<br /><span className="serif">Thoughtful solutions.</span></h2></Reveal><Link href="/work" className="text-link">View all work <span>↗</span></Link></div><WorkMarquee works={works} /></div></section>
-    <section className="approach-banner galaxy-card"><div className="galaxy-stars" aria-hidden="true" /><div className="wrap"><p className="eyebrow">BUILT AROUND WHERE YOU’RE GOING NEXT</p><h2>From first idea.<br /><span className="serif">To continuous growth.</span></h2><Link href="/work" className="btn white">See our work <span>↗</span></Link><div className="approach-orbit" aria-hidden="true"><i /><i /><i /></div></div></section>
-    <Testimonials /><CTA />
+  return <main id="main-content">
+    <ExperienceHero works={works} />
+    <div className="hx hx-marq" aria-hidden="true"><div>{[0, 1].map(k => <div className="hx-marq-g" key={k}>{words.map((w, i) => <span key={w} className={i % 2 ? 'o' : ''}>{w}<b>✳</b></span>)}</div>)}</div></div>
+    <section className="hx hx-about" id="hx-about">
+      <p className="hx-tag"><i /> THE GROSTAGE WAY</p>
+      <TextFill className="hx-statement" text="We turn ideas, operations and data into AI-powered digital products that help businesses work better, sell better and grow." />
+      <Link href="/about" className="hx-link" data-cursor="Read">About Grostage <span>↗</span></Link>
+    </section>
+    <ExperienceServices services={services} />
+    <ExperienceWork works={works} />
+    <Process />
+    <Testimonials />
+    <section className="hx hx-cta">
+      <p className="hx-tag"><i /> LET’S TALK</p>
+      <h2>Ready to build <span className="serif">what’s next?</span></h2>
+      <Magnetic strength={0.4}><Link href="/contact" className="hx-orb">Start a project <span>↗</span></Link></Magnetic>
+    </section>
   </main>;
 }
