@@ -77,12 +77,15 @@ export function ProjectTheatre({ works }) {
       });
       const update = () => {
         const current = Math.min(panels.length - 1, Math.round(tl.progress() * (panels.length - 1)));
-        panels.forEach((panel, i) => { panel.inert = i !== current; });
+        panels.forEach((panel, i) => {
+          panel.inert = i !== current;
+          panel.classList.toggle('is-current', i === current);
+        });
         setCurrent(current);
         root.current.querySelector('.theatre-progress').style.transform = `scaleX(${(current + 1) / panels.length})`;
       };
       tl.eventCallback('onUpdate', update); update();
-      return () => { section.classList.remove('theatre-enhanced'); section.removeEventListener('pointermove', move); section.removeEventListener('pointerleave', leave); story.current = null; panels.forEach(panel => { panel.inert = false; }); };
+      return () => { section.classList.remove('theatre-enhanced'); section.removeEventListener('pointermove', move); section.removeEventListener('pointerleave', leave); story.current = null; panels.forEach(panel => { panel.inert = false; panel.classList.remove('is-current'); }); };
     });
     return () => mm.revert();
   }, { scope: root });
