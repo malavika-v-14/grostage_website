@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const empty = { title: '', slug: '', category: '', excerpt: '', content: '', tags: '', image: '', published: true };
 const footerFields = [['tagline', 'Tagline'], ['email', 'Email'], ['phone', 'Phone'], ['address', 'Address'], ['copyright', 'Copyright text']];
@@ -7,14 +8,15 @@ const socialFields = [['linkedin', 'LinkedIn URL', 'LinkedIn'], ['instagram', 'I
 const socialAliases = { linkedin: 'linkedin', instagram: 'instagram', facebook: 'facebook', youtube: 'youtube', twitter: 'twitter', twitterx: 'twitter', x: 'twitter' };
 
 function footerForEditing(data) {
-  const fields = Object.fromEntries(socialFields.map(([key]) => [key, '']));
-  String(data.socials || '').split('\n').forEach(line => {
-    const [label, ...urlParts] = line.split('|');
-    const normalized = String(label || '').toLowerCase().replace(/[^a-z]/g, '');
-    const key = socialAliases[normalized];
-    if (key) fields[key] = urlParts.join('|').trim();
-  });
-  return { ...data, ...fields };
+  const socialLinks = Array.isArray(data.socials) ? data.socials.map(link => ({ label: link.label || '', value: link.value || link.href || '' })) : String(data.socials || '').split('\n').map(line => {
+    const [label, ...value] = line.split('|');
+    return { label: label || '', value: value.join('|') || '' };
+  }).filter(link => link.label || link.value);
+  const links = Array.isArray(data.links) ? data.links.map(link => ({ label: link.label || '', value: link.value || link.href || '' })) : String(data.links || '').split('\n').map(line => {
+    const [label, ...value] = line.split('|');
+    return { label: label || '', value: value.join('|') || '' };
+  }).filter(link => link.label || link.value);
+  return { ...data, links, socialLinks };
 }
 
 export default function AdminClient() {
@@ -23,6 +25,7 @@ export default function AdminClient() {
   const [form, setForm] = useState(null);
   const [footer, setFooter] = useState(null);
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const load = async () => {
     const endpoint = tab === 'footer' ? '/api/footer' : tab === 'contacts' ? '/api/contacts' : `/api/content/${tab}`;
@@ -75,11 +78,23 @@ export default function AdminClient() {
   };
 
   const saveFooter = async () => {
-    const socials = socialFields.map(([key, , label]) => footer[key] ? `${label}|${footer[key].trim()}` : '').filter(Boolean).join('\n');
-    const payload = { ...footer, socials };
-    socialFields.forEach(([key]) => delete payload[key]);
-    const response = await fetch('/api/footer', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setMessage(response.ok ? 'Footer saved.' : 'Unable to save footer.');
+    try {
+      const payload = {
+        ...footer,
+        links: (footer.links || []).filter(link => String(link.label || '').trim() || String(link.value || '').trim()),
+        socials: (footer.socialLinks || []).filter(link => String(link.label || '').trim() || String(link.value || '').trim()),
+      };
+      delete payload.socialLinks;
+      const response = await fetch('/api/footer', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) return setMessage(result.error || `Unable to save footer (${response.status}).`);
+      setMessage('Footer saved successfully.');
+      const saved = await fetch('/api/footer', { cache: 'no-store' });
+      if (saved.ok) setFooter(footerForEditing(await saved.json()));
+      router.refresh();
+    } catch (error) {
+      setMessage('Unable to save footer. Check your connection and try again.');
+    }
   };
 
   const logOut = async () => {
@@ -101,16 +116,30 @@ export default function AdminClient() {
         <button key={key} className={tab === key ? 'on' : ''} onClick={() => setTab(key)}>{label}</button>
       )}
     </div>
-    {message && <p className="mut">{message}</p>}
+    {message && <p className="mut" role="status" aria-live="polite">{message}</p>}
 
     {tab === 'footer' && footer && <div className="cform">
       {footerFields.map(([key, label]) => <label key={key}>{label}<input value={footer[key] || ''} onChange={event => setFooter({ ...footer, [key]: event.target.value })} /></label>)}
-      <label>Footer links (one per line: Label|/url)<textarea rows={5} value={footer.links || ''} onChange={event => setFooter({ ...footer, links: event.target.value })} /></label>
-      <section className="admin-social-panel">
-        <h2>Social Links</h2>
-        <div>{socialFields.map(([key, label]) => <label key={key}>{label}<input type="url" inputMode="url" placeholder="https://" value={footer[key] || ''} onChange={event => setFooter({ ...footer, [key]: event.target.value })} /></label>)}</div>
+      <fieldset className="admin-social-panel"><legend>Footer links</legend>
+        <p className="mut">Label is displayed in the footer. Value is the destination URL or path.</p>
+        {footer.links.map((link, index) => <div className="row" key={index}>
+          <input placeholder="Label" value={link.label} onChange={event => setFooter({ ...footer, links: footer.links.map((item, i) => i === index ? { ...item, label: event.target.value } : item) })} />
+          <input placeholder="Value, e.g. /about" value={link.value} onChange={event => setFooter({ ...footer, links: footer.links.map((item, i) => i === index ? { ...item, value: event.target.value } : item) })} />
+          <button type="button" className="btn ghost sm" onClick={() => setFooter({ ...footer, links: footer.links.filter((_, i) => i !== index) })}>Remove</button>
+        </div>)}
+        <button type="button" className="btn ghost sm" onClick={() => setFooter({ ...footer, links: [...footer.links, { label: '', value: '' }] })}>+ Add link</button>
+      </fieldset>
+      <section className="admin-social-panel"><h2>Social Links</h2>
+        <p className="mut">Label is displayed in the footer. Value is the social media URL.</p>
+        {footer.socialLinks.map((link, index) => <div className="row" key={index}>
+          <input placeholder="Label, e.g. LinkedIn" value={link.label} onChange={event => setFooter({ ...footer, socialLinks: footer.socialLinks.map((item, i) => i === index ? { ...item, label: event.target.value } : item) })} />
+          <input type="url" inputMode="url" placeholder="https://" value={link.value} onChange={event => setFooter({ ...footer, socialLinks: footer.socialLinks.map((item, i) => i === index ? { ...item, value: event.target.value } : item) })} />
+          <button type="button" className="btn ghost sm" onClick={() => setFooter({ ...footer, socialLinks: footer.socialLinks.filter((_, i) => i !== index) })}>Remove</button>
+        </div>)}
+        <button type="button" className="btn ghost sm" onClick={() => setFooter({ ...footer, socialLinks: [...footer.socialLinks, { label: '', value: '' }] })}>+ Add social link</button>
       </section>
       <button className="btn" onClick={saveFooter}>Save footer</button>
+      {message && <p className="form-status" role="status" aria-live="polite">{message}</p>}
     </div>}
 
     {tab === 'contacts' && <div className="list">
